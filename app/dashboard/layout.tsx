@@ -28,12 +28,6 @@ export default function RootLayout({
               <Link className="font-bold" href="#">
                 Classrooms
               </Link>
-              <Link className="text-gray-500 dark:text-gray-400" href="#">
-                Attendance
-              </Link>
-              <Link className="text-gray-500 dark:text-gray-400" href="#">
-                Reports
-              </Link>
             </nav>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
