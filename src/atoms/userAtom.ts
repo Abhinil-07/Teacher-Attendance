@@ -2,14 +2,16 @@ import { atom } from "recoil";
 
 let defaultUserThreads;
 if (typeof window !== "undefined") {
-  defaultUserThreads = localStorage.getItem("user-threads") || "{}";
+  // Check if localStorage has the item
+  const storedData = localStorage.getItem("user-info");
+  defaultUserThreads = storedData ? storedData : "{}"; // Use "{}" as default if localStorage is empty
 } else {
-  defaultUserThreads = "{}"; // Or any other default value you want to assign
+  defaultUserThreads = "{}"; // Assign valid JSON string as default value
 }
 
 const userAtom = atom({
   key: "userAtom",
-  default: "",
+  default: JSON.parse(defaultUserThreads),
 });
 
 export default userAtom;

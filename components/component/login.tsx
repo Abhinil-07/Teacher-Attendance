@@ -1,11 +1,32 @@
 "use client";
 
+import userAtom from "@/src/atoms/userAtom";
+import { teacherURL } from "@/src/utils/constants";
+import { TLogin } from "@/src/utils/types";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useSetRecoilState } from "recoil";
 
 export function Login() {
   const router = useRouter();
-
+  const setUser = useSetRecoilState(userAtom);
+  const [inputs, setInputs] = useState<TLogin>({ email: "", password: "" });
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    console.log(inputs);
+    const response = await axios.post(`${teacherURL}/login`, inputs, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    console.log(response.data);
+    localStorage.setItem("user-info", JSON.stringify(response.data.user));
+    setUser(response.data.user);
+    router.push("/dashboard");
+  };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-8">
@@ -35,6 +56,9 @@ export function Login() {
                 placeholder="Enter your email"
                 required
                 type="email"
+                onChange={(e) => {
+                  setInputs({ ...inputs, email: e.target.value });
+                }}
               />
             </div>
           </div>
@@ -54,11 +78,15 @@ export function Login() {
                 placeholder="Enter your password"
                 required
                 type="password"
+                onChange={(e) => {
+                  setInputs({ ...inputs, password: e.target.value });
+                }}
               />
             </div>
           </div>
           <div>
             <button
+              onClick={handleLogin}
               className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-400 dark:text-gray-950 dark:hover:bg-indigo-500 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-950"
               type="submit"
             >
