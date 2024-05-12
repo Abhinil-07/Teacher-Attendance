@@ -2,6 +2,7 @@
 import Auth from "@/components/Auth";
 import Home from "@/components/Dashboard";
 import userAtom from "@/src/atoms/userAtom";
+import { MyDashboard } from "@/components/component/dashboard";
 import { useRouter } from "next/navigation";
 import React, { useLayoutEffect } from "react";
 import { useRecoilValue } from "recoil";
@@ -12,7 +13,7 @@ const Dashboard = () => {
   useLayoutEffect(() => {
     if (!user) router.push("/");
   }, []);
-  return <div>Dashbaord</div>;
+  return <MyDashboard />;
 };
 
 export default Dashboard;
