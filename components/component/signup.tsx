@@ -17,19 +17,27 @@ export function Signup() {
     username: "",
     password: "",
   });
+  const [signingUp, setSigningUp] = useState<boolean>(false);
   const handleSignup = async (e: any) => {
     e.preventDefault();
+    setSigningUp(true); // Set state to indicate signing up is in progress
     console.log(inputs);
-    const response = await axios.post(`${teacherURL}/signup`, inputs, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    });
-    console.log(response.data);
-    localStorage.setItem("user-info", JSON.stringify(response.data.teacher));
-    setUser(response.data.teacher);
-    router.push("/dashboard");
+    try {
+      const response = await axios.post(`${teacherURL}/signup`, inputs, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log(response.data);
+      localStorage.setItem("user-info", JSON.stringify(response.data.teacher));
+      setUser(response.data.teacher);
+      router.push("/dashboard");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSigningUp(false); // Reset state after receiving response or error
+    }
   };
 
   return (
@@ -116,8 +124,9 @@ export function Signup() {
               className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-400 dark:text-gray-950 dark:hover:bg-indigo-500 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-950"
               type="submit"
               onClick={handleSignup}
+              disabled={signingUp}
             >
-              Sign up
+              {signingUp ? "Signing up..." : "Sign up"}
             </button>
           </div>
           <div className="text-center text-sm text-gray-600 dark:text-gray-400">

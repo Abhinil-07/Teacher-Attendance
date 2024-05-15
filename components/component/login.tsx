@@ -13,19 +13,26 @@ export function Login() {
   const router = useRouter();
   const setUser = useSetRecoilState(userAtom);
   const [inputs, setInputs] = useState<TLogin>({ email: "", password: "" });
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const handleLogin = async (e: any) => {
-    e.preventDefault();
-    console.log(inputs);
-    const response = await axios.post(`${teacherURL}/login`, inputs, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    });
-    console.log(response.data);
-    localStorage.setItem("user-info", JSON.stringify(response.data.user));
-    setUser(response.data.user);
-    router.push("/dashboard");
+    try {
+      e.preventDefault();
+      setSubmitting(true); // Set state to indicate submission is in progress
+      const response = await axios.post(`${teacherURL}/login`, inputs, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log(response.data);
+      localStorage.setItem("user-info", JSON.stringify(response.data.user));
+      setUser(response.data.user);
+      router.push("/dashboard");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false); // Reset state after receiving response or error
+    }
   };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-950">
@@ -87,10 +94,11 @@ export function Login() {
           <div>
             <button
               onClick={handleLogin}
+              disabled={submitting}
               className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-400 dark:text-gray-950 dark:hover:bg-indigo-500 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-950"
               type="submit"
             >
-              Sign in
+              {submitting ? "Submitting..." : "Sign in"}
             </button>
           </div>
           <div className="text-center text-sm text-gray-600 dark:text-gray-400">

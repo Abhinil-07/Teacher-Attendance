@@ -1,9 +1,60 @@
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { TableHead, TableRow, TableHeader, TableCell, TableBody, Table } from "@/components/ui/table"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  TableHead,
+  TableRow,
+  TableHeader,
+  TableCell,
+  TableBody,
+  Table,
+} from "@/components/ui/table";
+import { useState } from "react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "@/firebase.config";
+import { v4 } from "uuid";
+import axios from "axios";
 
 export function MyTable() {
+  const [imageUpload, setImageUpload] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [fetchingAttendance, setFetchingAttendance] = useState<boolean>(false);
+  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
+
+  const handleUpload = (e: any) => {
+    setImageUpload(e.target.files[0]);
+    console.log(e.target.files[0]);
+    const imageRef = ref(storage, `images/${e.target.files[0].name + v4()}`);
+
+    uploadBytes(imageRef, e.target.files[0]).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        console.log(url);
+        setImageUrl(url);
+        alert("Image uploaded successfully!");
+      });
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setFetchingAttendance(true); // Set state to indicate fetching is in progress
+      setButtonDisabled(true); // Disable the button while fetching
+      const response = await axios.post(
+        "http://localhost:5000/image/attendance",
+        {
+          url: imageUrl,
+          classroomId: "6640fbd74ca657ece9b9d5ea",
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setFetchingAttendance(false); // Reset state after receiving response or error
+      setButtonDisabled(false); // Enable the button again
+    }
+  };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-950">
       <div className="w-full max-w-6xl space-y-8">
@@ -16,12 +67,35 @@ export function MyTable() {
             Student Attendance
           </h2>
         </div>
-        <div className="flex justify-center">
-          <Button variant="outline">
-            <UploadIcon className="h-5 w-5 mr-2" />
-            Upload Image
-          </Button>
+        <div className="grid grid-cols-1">
+          <div className="flex justify-center">
+            <input
+              type="file"
+              id="upload-image"
+              className="hidden"
+              onChange={(e) => handleUpload(e)}
+            />
+            <label htmlFor="upload-image" className="cursor-pointer">
+              <div className="flex items-center">
+                <UploadIcon className="h-5 w-5 mr-2" />
+                Upload Image
+              </div>
+            </label>
+            {imageUrl !== "" && (
+              <div className="flex flex-col">
+                <img
+                  src={imageUrl}
+                  className="h-64 w-64 p-2"
+                  alt="Uploaded Image"
+                />
+                <Button onClick={handleSubmit} disabled={buttonDisabled}>
+                  {fetchingAttendance ? "Fetching Attendance..." : "Submit"}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="border rounded-lg overflow-x-auto">
           <Table>
             <TableHeader>
@@ -74,10 +148,10 @@ export function MyTable() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function CalendarIcon(props:any) {
+function CalendarIcon(props: any) {
   return (
     <svg
       {...props}
@@ -96,11 +170,10 @@ function CalendarIcon(props:any) {
       <rect width="18" height="18" x="3" y="4" rx="2" />
       <path d="M3 10h18" />
     </svg>
-  )
+  );
 }
 
-
-function DownloadIcon(props:any) {
+function DownloadIcon(props: any) {
   return (
     <svg
       {...props}
@@ -118,11 +191,10 @@ function DownloadIcon(props:any) {
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" x2="12" y1="15" y2="3" />
     </svg>
-  )
+  );
 }
 
-
-function UploadIcon(props:any) {
+function UploadIcon(props: any) {
   return (
     <svg
       {...props}
@@ -140,5 +212,5 @@ function UploadIcon(props:any) {
       <polyline points="17 8 12 3 7 8" />
       <line x1="12" x2="12" y1="3" y2="15" />
     </svg>
-  )
+  );
 }

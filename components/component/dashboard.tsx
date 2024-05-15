@@ -3,8 +3,20 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { CardContent, Card } from "@/components/ui/card";
+import { useState } from "react";
+import AddClassroomModal from "./AddClassroomModal";
 
 export function MyDashboard() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [classrooms, setClassrooms] = useState<
+    { code: string; name: string }[]
+  >([]);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  const handleAddClassroom = (classroom: { code: string; name: string }) => {
+    setClassrooms((prevClassrooms) => [...prevClassrooms, classroom]);
+  };
+  console.log("Classrooms", classrooms);
   return (
     <>
       {/* <header className="flex h-16 w-full items-center justify-between px-6 border-b">
@@ -43,11 +55,12 @@ export function MyDashboard() {
       <main className="flex flex-col gap-8 p-6 md:p-10">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Classrooms</h1>
-          <Button>
+          <Button onClick={openModal}>
             <PlusIcon className="mr-2 h-4 w-4" />
             Add Classroom
           </Button>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <Card>
             <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
@@ -64,10 +77,13 @@ export function MyDashboard() {
                       <span className="sr-only">Copy Classroom Code</span>
                     </Button>
                   </Tooltip>
-                  <Button size="sm" variant="ghost">
-                    <EyeIcon className="h-4 w-4" />
-                    <span className="sr-only">View Classroom Details</span>
-                  </Button>
+                  <Link href="/dashboard/1">
+                    <Button size="sm" variant="ghost">
+                      <EyeIcon className="h-4 w-4" />
+                      <span className="sr-only">View Classroom Details</span>
+                    </Button>
+                  </Link>
+
                   <Button size="sm" variant="ghost">
                     <TrashIcon className="h-4 w-4" />
                     <span className="sr-only">Delete Classroom</span>
@@ -159,6 +175,9 @@ export function MyDashboard() {
           </Card>
         </div>
       </main>
+      {isModalOpen && (
+        <AddClassroomModal onClose={closeModal} onSubmit={handleAddClassroom} />
+      )}
     </>
   );
 }
