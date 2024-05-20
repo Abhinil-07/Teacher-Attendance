@@ -15,23 +15,32 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/firebase.config";
 import { v4 } from "uuid";
 import axios from "axios";
+import { Student } from "@/src/utils/types";
 
 export function MyTable() {
   const [imageUpload, setImageUpload] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [fetchingAttendance, setFetchingAttendance] = useState<boolean>(false);
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
+  const [data, setData] = useState<Student[]>([]);
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState<boolean>(false);
 
-  const handleUpload = (e: any) => {
-    setImageUpload(e.target.files[0]);
-    console.log(e.target.files[0]);
-    const imageRef = ref(storage, `images/${e.target.files[0].name + v4()}`);
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      return; // Exit early if files are null or empty
+    }
+    const file = files[0];
+    setImageUpload(file);
+    setUploading(true); // Set uploading to true when the upload starts
 
-    uploadBytes(imageRef, e.target.files[0]).then((snapshot) => {
+    const imageRef = ref(storage, `images/${file.name + v4()}`);
+    uploadBytes(imageRef, file).then((snapshot) => {
       getDownloadURL(snapshot.ref).then((url) => {
-        console.log(url);
         setImageUrl(url);
         alert("Image uploaded successfully!");
+        setUploading(false); // Set uploading to false when the upload is complete
       });
     });
   };
@@ -48,12 +57,37 @@ export function MyTable() {
         }
       );
       console.log(response.data);
+      setData(response.data.data);
+      setImage(response.data.image);
     } catch (error) {
       console.log(error);
     } finally {
       setFetchingAttendance(false); // Reset state after receiving response or error
       setButtonDisabled(false); // Enable the button again
     }
+  };
+  const convertToCSV = () => {
+    const header = ["S.No.", "Name", "ID", "Attendance"];
+    const csvData = [header.join(",")];
+    data.forEach((student, index) => {
+      const rowData = [
+        index + 1,
+        student.name,
+        student.studentId,
+        student.present ? "Present" : "Absent",
+      ];
+      csvData.push(rowData.join(","));
+    });
+    return csvData.join("\n");
+  };
+
+  const downloadCSV = () => {
+    const csv = convertToCSV();
+    const csvFile = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(csvFile);
+    link.download = "attendance.csv";
+    link.click();
   };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-950">
@@ -73,79 +107,81 @@ export function MyTable() {
               type="file"
               id="upload-image"
               className="hidden"
-              onChange={(e) => handleUpload(e)}
+              onChange={handleUpload}
             />
             <label htmlFor="upload-image" className="cursor-pointer">
               <div className="flex items-center">
                 <UploadIcon className="h-5 w-5 mr-2" />
-                Upload Image
+                {uploading ? "Uploading..." : "Upload Image"}
               </div>
             </label>
-            {imageUrl !== "" && (
-              <div className="flex flex-col">
-                <img
-                  src={imageUrl}
-                  className="h-64 w-64 p-2"
-                  alt="Uploaded Image"
-                />
-                <Button onClick={handleSubmit} disabled={buttonDisabled}>
-                  {fetchingAttendance ? "Fetching Attendance..." : "Submit"}
-                </Button>
-              </div>
-            )}
           </div>
         </div>
-
-        <div className="border rounded-lg overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>S.No.</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Attendance</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>1</TableCell>
-                <TableCell>John Doe</TableCell>
-                <TableCell>john@example.com</TableCell>
-                <TableCell>Present</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>2</TableCell>
-                <TableCell>Jane Smith</TableCell>
-                <TableCell>jane@example.com</TableCell>
-                <TableCell>Absent</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>3</TableCell>
-                <TableCell>Bob Johnson</TableCell>
-                <TableCell>bob@example.com</TableCell>
-                <TableCell>Present</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>4</TableCell>
-                <TableCell>Sarah Lee</TableCell>
-                <TableCell>sarah@example.com</TableCell>
-                <TableCell>Present</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>5</TableCell>
-                <TableCell>Michael Brown</TableCell>
-                <TableCell>michael@example.com</TableCell>
-                <TableCell>Absent</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+        <div className="flex items-center justify-center">
+          {imageUrl !== "" && (
+            <div className="flex flex-col justify-center items-center">
+              <img
+                src={imageUrl}
+                className="p-2 w-[400px] h-[300px]"
+                alt="Uploaded Image"
+              />
+              <Button
+                className="w-[100px]"
+                onClick={handleSubmit}
+                disabled={buttonDisabled}
+              >
+                {fetchingAttendance ? "Fetching Attendance..." : "Submit"}
+              </Button>
+            </div>
+          )}
         </div>
-        <div className="flex justify-center">
-          <Button variant="outline">
-            <DownloadIcon className="h-5 w-5 mr-2" />
-            Download Excel
-          </Button>
+        <div className="flex items-center justify-center">
+          {image && (
+            <img
+              src={`data:image/png;base64,${image}`}
+              alt="marked image"
+              className="w-auto h-auto"
+            />
+          )}
         </div>
+        {data.length > 0 && (
+          <div className="border rounded-lg overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>S.No.</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Student ID</TableHead>
+                  <TableHead>Attendance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((student, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.studentId}</TableCell>
+                    <TableCell>
+                      {student.present ? "Present" : "Absent"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+        {data.length === 0 ? (
+          <div className="flex justify-center">
+            <p>No data available</p>
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <Button variant="outline" onClick={downloadCSV}>
+              <DownloadIcon className="h-5 w-5 mr-2" />
+              Download Excel
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
