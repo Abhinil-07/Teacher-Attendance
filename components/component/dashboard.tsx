@@ -5,18 +5,17 @@ import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { CardContent, Card } from "@/components/ui/card";
 import { useState } from "react";
 import AddClassroomModal from "./AddClassroomModal";
+import { useRecoilState } from "recoil";
+import classroomsAtom from "@/src/atoms/classrooms";
 
 export function MyDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [classrooms, setClassrooms] = useState<
-    { code: string; name: string }[]
-  >([]);
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  const handleAddClassroom = (classroom: { code: string; name: string }) => {
-    setClassrooms((prevClassrooms) => [...prevClassrooms, classroom]);
-  };
-  console.log("Classrooms", classrooms);
+  const handleAddClassroom = (classroom: { code: string; name: string }) => {};
+  const classrooms = useRecoilState(classroomsAtom);
+  console.log("mera classroom", classrooms);
   return (
     <>
       {/* <header className="flex h-16 w-full items-center justify-between px-6 border-b">
@@ -62,122 +61,44 @@ export function MyDashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-              <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
-              <div className="text-lg font-semibold">Math 101</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Students: 25
-              </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <Button size="sm" variant="ghost">
-                      <CopyIcon className="h-4 w-4" />
-                      <span className="sr-only">Copy Classroom Code</span>
-                    </Button>
-                  </Tooltip>
-                  <Link href="/dashboard/1">
-                    <Button size="sm" variant="ghost">
-                      <EyeIcon className="h-4 w-4" />
-                      <span className="sr-only">View Classroom Details</span>
-                    </Button>
-                  </Link>
+          {classrooms[0].map((classroom) => (
+            <Card key={classroom.code}>
+              <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
+                <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
+                <div className="text-lg font-semibold">{classroom.name}</div>
 
-                  <Button size="sm" variant="ghost">
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Delete Classroom</span>
-                  </Button>
-                </TooltipProvider>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-              <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
-              <div className="text-lg font-semibold">English 201</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Students: 30
-              </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          navigator.clipboard.writeText(classroom.code)
+                        }
+                      >
+                        <CopyIcon className="h-4 w-4" />
+                        <span className="sr-only">Copy Classroom Code</span>
+                      </Button>
+                    </Tooltip>
+                    <Link href={`/dashboard/${classroom.code}`}>
+                      <Button size="sm" variant="ghost">
+                        <EyeIcon className="h-4 w-4" />
+                        <span className="sr-only">View Classroom Details</span>
+                      </Button>
+                    </Link>
                     <Button size="sm" variant="ghost">
-                      <CopyIcon className="h-4 w-4" />
-                      <span className="sr-only">Copy Classroom Code</span>
+                      <TrashIcon className="h-4 w-4" />
+                      <span className="sr-only">Delete Classroom</span>
                     </Button>
-                  </Tooltip>
-                  <Button size="sm" variant="ghost">
-                    <EyeIcon className="h-4 w-4" />
-                    <span className="sr-only">View Classroom Details</span>
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Delete Classroom</span>
-                  </Button>
-                </TooltipProvider>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-              <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
-              <div className="text-lg font-semibold">Biology 301</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Students: 28
-              </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <Button size="sm" variant="ghost">
-                      <CopyIcon className="h-4 w-4" />
-                      <span className="sr-only">Copy Classroom Code</span>
-                    </Button>
-                  </Tooltip>
-                  <Button size="sm" variant="ghost">
-                    <EyeIcon className="h-4 w-4" />
-                    <span className="sr-only">View Classroom Details</span>
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Delete Classroom</span>
-                  </Button>
-                </TooltipProvider>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-              <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
-              <div className="text-lg font-semibold">Computer Science 401</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Students: 35
-              </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <Button size="sm" variant="ghost">
-                      <CopyIcon className="h-4 w-4" />
-                      <span className="sr-only">Copy Classroom Code</span>
-                    </Button>
-                  </Tooltip>
-                  <Button size="sm" variant="ghost">
-                    <EyeIcon className="h-4 w-4" />
-                    <span className="sr-only">View Classroom Details</span>
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Delete Classroom</span>
-                  </Button>
-                </TooltipProvider>
-              </div>
-            </CardContent>
-          </Card>
+                  </TooltipProvider>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </main>
-      {isModalOpen && (
-        <AddClassroomModal onClose={closeModal} onSubmit={handleAddClassroom} />
-      )}
+      {isModalOpen && <AddClassroomModal onClose={closeModal} />}
     </>
   );
 }

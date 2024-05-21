@@ -4,7 +4,7 @@ import React from "react";
 const page = ({ params }: { params: { classroomID: string } }) => {
   return (
     <div>
-      <h1>{params.classroomID}</h1>
+      {/* <h1>{params.classroomID}</h1> */}
       <MyTable />;
     </div>
   );
