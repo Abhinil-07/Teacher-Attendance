@@ -1,103 +1,106 @@
+"use client";
 import Link from "next/link";
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { CardContent, Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddClassroomModal from "./AddClassroomModal";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import classroomsAtom from "@/src/atoms/classrooms";
+import { classroomURL } from "@/src/utils/constants";
+import axios from "axios";
+import Loading from "../loading";
 
 export function MyDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const handleAddClassroom = (classroom: { code: string; name: string }) => {};
   const classrooms = useRecoilState(classroomsAtom);
+  const setClassrooms = useSetRecoilState(classroomsAtom);
   console.log("mera classroom", classrooms);
+  const handleCopyToClipboard = (text: string, name: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() =>
+        alert(`Classroom code for ${name} ${text} copied to clipboard`)
+      );
+  };
+  useEffect(() => {
+    const fetchClassrooms = async () => {
+      try {
+        const response = await axios.get(`${classroomURL}/all`);
+        console.log(response.data.classrooms);
+        setClassrooms(response.data.classrooms);
+      } catch (error) {
+        console.error("Error fetching classrooms:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClassrooms();
+  }, [setClassrooms]);
   return (
     <>
-      {/* <header className="flex h-16 w-full items-center justify-between px-6 border-b">
-        <nav className="flex items-center gap-6 text-lg font-medium">
-          <Link
-            className="flex items-center gap-2 text-lg font-semibold"
-            href="#"
-          >
-            <CalendarIcon className="h-6 w-6" />
-            <span className="sr-only">Attendance System</span>
-          </Link>
-          <Link className="font-bold" href="#">
-            Classrooms
-          </Link>
-          <Link className="text-gray-500 dark:text-gray-400" href="#">
-            Attendance
-          </Link>
-          <Link className="text-gray-500 dark:text-gray-400" href="#">
-            Reports
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage alt="Avatar" src="/placeholder-user.jpg" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <div className="text-sm font-medium">John Doe</div>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <main className="flex flex-col gap-8 p-6 md:p-10">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Classrooms</h1>
+            <Button onClick={openModal}>
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Add Classroom
+            </Button>
           </div>
-          <Button className="rounded-full" size="icon" variant="ghost">
-            <LogOutIcon className="h-5 w-5" />
-            <span className="sr-only">Logout</span>
-          </Button>
-        </div>
-      </header> */}
-      <main className="flex flex-col gap-8 p-6 md:p-10">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Classrooms</h1>
-          <Button onClick={openModal}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Classroom
-          </Button>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {classrooms[0].map((classroom) => (
-            <Card key={classroom.code}>
-              <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-                <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
-                <div className="text-lg font-semibold">{classroom.name}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {classrooms[0].map((classroom) => (
+              <Card key={classroom.code}>
+                <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
+                  <ClapperboardIcon className="h-12 w-12 text-gray-500 dark:text-gray-400" />
+                  <div className="text-lg font-semibold">{classroom.name}</div>
 
-                <div className="flex gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          navigator.clipboard.writeText(classroom.code)
-                        }
-                      >
-                        <CopyIcon className="h-4 w-4" />
-                        <span className="sr-only">Copy Classroom Code</span>
-                      </Button>
-                    </Tooltip>
-                    <Link href={`/dashboard/${classroom.code}`}>
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              classroom.code,
+                              classroom.name
+                            )
+                          }
+                        >
+                          <CopyIcon className="h-4 w-4" />
+                          <span className="sr-only">Copy Classroom Code</span>
+                        </Button>
+                      </Tooltip>
+                      <Link href={`/dashboard/${classroom.code}`}>
+                        <Button size="sm" variant="ghost">
+                          <EyeIcon className="h-4 w-4" />
+                          <span className="sr-only">
+                            View Classroom Details
+                          </span>
+                        </Button>
+                      </Link>
                       <Button size="sm" variant="ghost">
-                        <EyeIcon className="h-4 w-4" />
-                        <span className="sr-only">View Classroom Details</span>
+                        <TrashIcon className="h-4 w-4" />
+                        <span className="sr-only">Delete Classroom</span>
                       </Button>
-                    </Link>
-                    <Button size="sm" variant="ghost">
-                      <TrashIcon className="h-4 w-4" />
-                      <span className="sr-only">Delete Classroom</span>
-                    </Button>
-                  </TooltipProvider>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </main>
+                    </TooltipProvider>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      )}
       {isModalOpen && <AddClassroomModal onClose={closeModal} />}
     </>
   );

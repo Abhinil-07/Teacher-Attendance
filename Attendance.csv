@@ -1,0 +1,4 @@
+data:text/csv;charset=utf-8,"Name","Student ID","2023-05-01","2023-05-02"
+"John Doe","S001","present","absent"
+"Jane Smith","S002","absent","present"
+"Emily Johnson","S003","present","absent"

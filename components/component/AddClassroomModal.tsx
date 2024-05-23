@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import classroomsAtom from "@/src/atoms/classrooms";
 import axios from "axios";
 import { classroomURL } from "@/src/utils/constants";
+import userAtom from "@/src/atoms/userAtom";
+import ShortUniqueId from "short-unique-id";
 
 interface AddClassroomModalProps {
   onClose: () => void;
@@ -15,18 +17,26 @@ interface Classroom {
 }
 
 function AddClassroomModal({ onClose }: AddClassroomModalProps) {
-  const [classroom, setClassroom] = useState("");
+  const [classroom, setClassroom] = useState<Classroom>({ name: "", code: "" });
   const setClassroomList = useSetRecoilState<Classroom[]>(classroomsAtom);
+  const teacherDetails = useRecoilValue(userAtom);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setClassroom(event.target.value);
+    const id = new ShortUniqueId().randomUUID(6);
+    setClassroom({
+      name: event.target.value,
+      code: id,
+    });
   };
 
   const handleSubmit = async () => {
     try {
+      const teacherID = teacherDetails._id;
+      // const id = new ShortUniqueId().randomUUID(6);
       const payload = {
-        name: classroom,
-        teacherID: "6643ccccfac1d09dbe0c0579", // Corrected key name
+        name: classroom.name,
+        teacherID,
+        id: classroom.code,
       };
       console.log("Sending payload:", payload);
 
@@ -38,7 +48,7 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
       console.log("Response data:", response.data);
 
       const newClassroom = {
-        code: response.data.classroom.id, // Use `id` as `code`
+        code: response.data.classroom.code, // Use `id` as `code`
         name: response.data.classroom.name,
       };
 
@@ -54,8 +64,10 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
         // Something else happened while setting up the request
         console.error("General error:", error.message);
       }
+    } finally {
+      alert("Classroom added successfully!");
+      onClose();
     }
-    onClose();
   };
 
   return (
@@ -74,7 +86,7 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
             id="className"
             name="name"
             className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-            value={classroom}
+            value={classroom.name}
             onChange={handleInputChange}
           />
         </div>
@@ -85,6 +97,7 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
           <Button variant="destructive" onClick={onClose}>
             Close
           </Button>
+          <span></span>
         </div>
       </div>
     </div>

@@ -19,11 +19,83 @@ import { Student } from "@/src/utils/types";
 
 export function MyTable() {
   const [imageUpload, setImageUpload] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>(
+    "https://firebasestorage.googleapis.com/v0/b/final-year-attendance-system.appspot.com/o/images%2Funmarked.jpeg?alt=media&token=74c51158-00d5-4802-9dfe-42b7c8736b35"
+  );
   const [fetchingAttendance, setFetchingAttendance] = useState<boolean>(false);
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-  const [data, setData] = useState<Student[]>([]);
-  const [image, setImage] = useState(null);
+  const [data, setData] = useState<Student[]>([
+    { name: "Ter Stegen", present: 1, studentId: "6643a577193f72edf61c168c" },
+    { name: "Gavi", present: 1, studentId: "6643a42d193f72edf61c167a" },
+    { name: "Pedri", present: 1, studentId: "6643a532193f72edf61c1688" },
+    { name: "De Jong", present: 1, studentId: "6643a457193f72edf61c167e" },
+    { name: "Balde", present: 1, studentId: "6643a4c6193f72edf61c1684" },
+    { name: "Raphinha", present: 1, studentId: "6643a4b6193f72edf61c1680" },
+    { name: "Eric Garcia", present: 0, studentId: "6643cbfafac1d09dbe0c0572" },
+    { name: "Kounde", present: 1, studentId: "6643a4b6193f72edf61c1688" },
+    { name: "Lewandowski", present: 1, studentId: "6643a4b6193f72edf61c1689" },
+    { name: "Araujo", present: 1, studentId: "6643a4b6193f72edf61c1690" },
+    { name: "Oriol Romeu", present: 1, studentId: "6643a4b6193f72edf61c1691" },
+    { name: "Busquets", present: 0, studentId: "6643a4b6193f72edf61c1692" },
+    { name: "Cancelo", present: 0, studentId: "6643a4b6193f72edf61c1693" },
+    { name: "Christensen", present: 0, studentId: "6643a4b6193f72edf61c1694" },
+    {
+      name: "Ferran Torres",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1695",
+    },
+    { name: "Gundogan", present: 0, studentId: "6643a4b6193f72edf61c1696" },
+    { name: "Inaki Pena", present: 0, studentId: "6643a4b6193f72edf61c1697" },
+    {
+      name: "Inigo Martinez",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1698",
+    },
+    { name: "Joao Felix", present: 0, studentId: "6643a4b6193f72edf61c1699" },
+    { name: "Kessie", present: 0, studentId: "6643a4b6193f72edf61c1700" },
+    { name: "Lamine Yamal", present: 0, studentId: "6643a4b6193f72edf61c1701" },
+    {
+      name: "Marcos Alonso",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1702",
+    },
+    { name: "Ansu Fati", present: 0, studentId: "6643a4b6193f72edf61c1703" },
+    {
+      name: "Memphis Depay",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1704",
+    },
+    { name: "Pique", present: 0, studentId: "6643a4b6193f72edf61c1705" },
+    {
+      name: "Sergi Roberto",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1706",
+    },
+    {
+      name: "Nico Gonzalez",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1707",
+    },
+    { name: "Aubameyang", present: 0, studentId: "6643a4b6193f72edf61c1708" },
+    { name: "Dani Alves", present: 0, studentId: "6643a4b6193f72edf61c1709" },
+    { name: "Umtiti", present: 0, studentId: "6643a4b6193f72edf61c1710" },
+    { name: "Lenglet", present: 0, studentId: "6643a4b6193f72edf61c1711" },
+    { name: "Neto", present: 0, studentId: "6643a4b6193f72edf61c1712" },
+    {
+      name: "Oscar Mingueza",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1713",
+    },
+    {
+      name: "Miralem Pjanic",
+      present: 0,
+      studentId: "6643a4b6193f72edf61c1714",
+    },
+    { name: "Riqui Puig", present: 0, studentId: "6643a4b6193f72edf61c1715" },
+  ]);
+  const [image, setImage] = useState(
+    "https://firebasestorage.googleapis.com/v0/b/final-year-attendance-system.appspot.com/o/images%2Fmarked%20photo.jpg?alt=media&token=bc1dd22d-7f94-47b1-b477-16f9749fcf32"
+  );
   const [uploading, setUploading] = useState<boolean>(false);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,7 +198,7 @@ export function MyTable() {
                 alt="Uploaded Image"
               />
               <Button
-                className="w-[100px]"
+                className="w-full"
                 onClick={handleSubmit}
                 disabled={buttonDisabled}
               >
@@ -137,11 +209,7 @@ export function MyTable() {
         </div>
         <div className="flex items-center justify-center">
           {image && (
-            <img
-              src={`data:image/png;base64,${image}`}
-              alt="marked image"
-              className="w-auto h-auto"
-            />
+            <img src={image} alt="marked image" className="w-auto h-auto" />
           )}
         </div>
         {data.length > 0 && (
@@ -178,7 +246,7 @@ export function MyTable() {
           <div className="flex justify-center">
             <Button variant="outline" onClick={downloadCSV}>
               <DownloadIcon className="h-5 w-5 mr-2" />
-              Download Excel
+              Download Attendance Sheet
             </Button>
           </div>
         )}

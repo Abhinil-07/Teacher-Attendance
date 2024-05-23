@@ -10,7 +10,7 @@ export function Landing() {
             <span className="ml-2 text-2xl font-bold">Student Attendance</span>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-            Welcome to the admin side of our Attendance System
+            Welcome to the Admin side of our Attendance System
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Get started by creating an account.

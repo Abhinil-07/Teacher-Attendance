@@ -1,12 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Providers } from "@/providers";
+import userAtom from "@/src/atoms/userAtom";
 import { CalendarIcon, LogOutIcon } from "lucide-react";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import { useRecoilValue } from "recoil";
 
 const inter = Inter({ subsets: ["latin"] });
-
 export default function RootLayout({
   children,
 }: {
