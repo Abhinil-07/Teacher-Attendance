@@ -6,6 +6,7 @@ import axios from "axios";
 import { classroomURL } from "@/src/utils/constants";
 import userAtom from "@/src/atoms/userAtom";
 import ShortUniqueId from "short-unique-id";
+import toast from "react-hot-toast";
 
 interface AddClassroomModalProps {
   onClose: () => void;
@@ -53,6 +54,7 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
       };
 
       setClassroomList((prevClassrooms) => [...prevClassrooms, newClassroom]);
+      toast.success("Classroom added successfully");
     } catch (error: any) {
       if (error.response) {
         // Server responded with a status other than 200 range
@@ -65,7 +67,6 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
         console.error("General error:", error.message);
       }
     } finally {
-      alert("Classroom added successfully!");
       onClose();
     }
   };

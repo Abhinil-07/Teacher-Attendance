@@ -11,6 +11,8 @@ import classroomsAtom from "@/src/atoms/classrooms";
 import { classroomURL } from "@/src/utils/constants";
 import axios from "axios";
 import Loading from "../loading";
+import { DownloadIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function MyDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +28,7 @@ export function MyDashboard() {
     navigator.clipboard
       .writeText(text)
       .then(() =>
-        alert(`Classroom code for ${name} ${text} copied to clipboard`)
+        toast.success(`Classroom code for ${name} ${text} copied to clipboard`)
       );
   };
   useEffect(() => {
@@ -92,6 +94,12 @@ export function MyDashboard() {
                       <Button size="sm" variant="ghost">
                         <TrashIcon className="h-4 w-4" />
                         <span className="sr-only">Delete Classroom</span>
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        <DownloadIcon className="h-4 w-4" />
+                        <span className="sr-only">
+                          Download Attendance Sheet
+                        </span>
                       </Button>
                     </TooltipProvider>
                   </div>

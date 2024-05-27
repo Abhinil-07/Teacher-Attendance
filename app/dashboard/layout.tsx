@@ -1,3 +1,5 @@
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "@/components/toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Providers } from "@/providers";
@@ -17,20 +19,27 @@ export default function RootLayout({
     <html lang="en">
       <Providers>
         <body className={inter.className}>
+          {/* <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          > */}
           <header className="flex h-16 w-full items-center justify-between px-6 border-b">
             <nav className="flex items-center gap-6 text-lg font-medium">
               <Link
                 className="flex items-center gap-2 text-lg font-semibold"
-                href="#"
+                href="/dashboard"
               >
                 <CalendarIcon className="h-6 w-6" />
                 <span className="sr-only">Attendance System</span>
               </Link>
-              <Link className="font-bold" href="#">
+              <Link className="font-bold" href="/dashoard">
                 Classrooms
               </Link>
             </nav>
             <div className="flex items-center gap-4">
+              <ModeToggle />
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage alt="Avatar" src="/placeholder-user.jpg" />
@@ -44,7 +53,9 @@ export default function RootLayout({
               </Button>
             </div>
           </header>
+
           {children}
+          {/* </ThemeProvider> */}
         </body>
       </Providers>
     </html>

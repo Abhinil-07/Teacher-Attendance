@@ -5,7 +5,7 @@ const page = ({ params }: { params: { classroomID: string } }) => {
   return (
     <div>
       {/* <h1>{params.classroomID}</h1> */}
-      <MyTable />;
+      <MyTable classroomID={params.classroomID} />;
     </div>
   );
 };

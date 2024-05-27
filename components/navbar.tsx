@@ -1,9 +1,15 @@
+"use client";
 import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarIcon, LogOutIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRecoilValue } from "recoil";
 import Link from "next/link";
-const navbar = () => {
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import userAtom from "@/src/atoms/userAtom";
+import { CalendarIcon, LogOutIcon } from "lucide-react";
+
+const Navbar: React.FC = () => {
+  const user = useRecoilValue(userAtom);
+
   return (
     <header className="flex h-16 w-full items-center justify-between px-6 border-b">
       <nav className="flex items-center gap-6 text-lg font-medium">
@@ -35,4 +41,4 @@ const navbar = () => {
   );
 };
 
-export default navbar;
+export default Navbar;
