@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
             <AvatarImage alt="Avatar" src="/placeholder-user.jpg" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
-          <div className="text-sm font-medium">John Doe</div>
+          <div className="text-sm font-medium">{user.username}</div>
         </div>
         <Button className="rounded-full" size="icon" variant="ghost">
           <LogOutIcon className="h-5 w-5" />
