@@ -1,101 +1,94 @@
 "use client";
 import React, { useState } from "react";
-
-type AttendanceStatus = "present" | "absent";
-
-interface StudentAttendance {
-  studentId: string;
-  name: string;
-  status: AttendanceStatus;
-}
+import axios from "axios";
+import { attendanceURL } from "@/src/utils/constants";
 
 interface AttendanceRecord {
-  date: string;
-  attendance: StudentAttendance[];
+  studentId: string;
+  name: string;
+  present: number;
 }
 
-const AttendanceComponent: React.FC = () => {
-  const [attendanceRecords, setAttendanceRecords] = useState<
-    AttendanceRecord[]
-  >([
-    {
-      date: "2023-05-01",
-      attendance: [
-        { studentId: "S001", name: "John Doe", status: "present" },
-        { studentId: "S002", name: "Jane Smith", status: "absent" },
-        { studentId: "S003", name: "Emily Johnson", status: "present" },
-      ],
-    },
-    {
-      date: "2023-05-02",
-      attendance: [
-        { studentId: "S001", name: "John Doe", status: "absent" },
-        { studentId: "S002", name: "Jane Smith", status: "present" },
-        { studentId: "S003", name: "Emily Johnson", status: "absent" },
-      ],
-    },
-  ]);
+interface AttendanceData {
+  date: string;
+  attendance: AttendanceRecord[];
+}
 
-  const formatDataForExcel = (records: AttendanceRecord[]): string[][] => {
-    const headers = [
-      "Name",
-      "Student ID",
-      ...records.map((record) => record.date),
-    ];
-    const students: {
+const ExampleComponent: React.FC = () => {
+  const [attendanceData, setAttendanceData] = useState<AttendanceData[]>([]);
+
+  const handleDownloadCSV = async () => {
+    try {
+      const response = await axios.get(`${attendanceURL}/cumulative`);
+      const data: AttendanceData[] = response.data.attendance;
+      console.log("masti", data);
+      setAttendanceData(data);
+      generateCSV(data);
+    } catch (error) {
+      console.error("Error fetching attendance data:", error);
+    }
+  };
+
+  const generateCSV = (data: AttendanceData[]) => {
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add headers
+    csvContent += "Name,Student ID";
+    data.forEach((attendance) => {
+      csvContent += `,${new Date(attendance.date).toLocaleDateString()}`;
+    });
+    csvContent += ",Total\n"; // Add Total column header
+
+    // Create a map to store attendance records by student
+    const studentAttendanceMap: {
       [key: string]: {
         name: string;
-        id: string;
-        attendance: { [key: string]: string };
+        studentId: string;
+        days: number[];
+        total: number;
       };
     } = {};
 
-    records.forEach((record) => {
-      record.attendance.forEach((student) => {
-        if (!students[student.studentId]) {
-          students[student.studentId] = {
-            name: student.name,
-            id: student.studentId,
-            attendance: {},
+    // Populate the map
+    data.forEach((attendance, dateIndex) => {
+      attendance.attendance.forEach((record) => {
+        if (!studentAttendanceMap[record.studentId]) {
+          studentAttendanceMap[record.studentId] = {
+            name: record.name,
+            studentId: record.studentId,
+            days: [],
+            total: 0,
           };
         }
-        students[student.studentId].attendance[record.date] = student.status;
+        studentAttendanceMap[record.studentId].days[dateIndex] = record.present;
+        studentAttendanceMap[record.studentId].total += record.present;
       });
     });
 
-    const rows = Object.values(students).map((student) => [
-      student.name,
-      student.id,
-      ...records.map((record) => student.attendance[record.date] || ""),
-    ]);
+    // Add attendance records
+    for (const studentId in studentAttendanceMap) {
+      const record = studentAttendanceMap[studentId];
+      csvContent += `${record.name},${record.studentId}`;
+      record.days.forEach((present) => {
+        csvContent += `,${present === 1 ? "Present" : "Absent"}`;
+      });
+      csvContent += `,${record.total}\n`; // Add total present count for each student
+    }
 
-    return [headers, ...rows];
-  };
-
-  const downloadExcel = (): void => {
-    const data = formatDataForExcel(attendanceRecords);
-    let csvContent = "";
-
-    data.forEach((row) => {
-      const rowContent = row.map((item) => `"${item}"`).join(",");
-      csvContent += rowContent + "\r\n";
-    });
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Attendance.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Create a temporary link to trigger the download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "attendance.csv");
+    document.body.appendChild(link);
+    link.click();
   };
 
   return (
     <div>
-      <button onClick={downloadExcel}>Download Excel</button>
+      <button onClick={handleDownloadCSV}>Download CSV</button>
     </div>
   );
 };
 
-export default AttendanceComponent;
+export default ExampleComponent;

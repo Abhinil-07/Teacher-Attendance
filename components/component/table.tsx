@@ -55,7 +55,7 @@ export function MyTable({ classroomID }: { classroomID: string }) {
         "http://localhost:5000/image/attendance",
         {
           url: imageUrl,
-          classroomId: classroomID,
+          classroomId: "gcZN5Q",
         }
       );
       console.log(response.data);

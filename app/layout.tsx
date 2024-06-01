@@ -18,8 +18,8 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="en">
-      <Providers>
-        <body className={inter.className}>
+      <body className={inter.className}>
+        <Providers>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -29,8 +29,8 @@ export default function RootLayout({
             <Toaster position="top-center" />
             {children}
           </ThemeProvider>
-        </body>
-      </Providers>
+        </Providers>
+      </body>
     </html>
   );
 }

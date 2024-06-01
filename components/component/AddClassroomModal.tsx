@@ -7,6 +7,7 @@ import { classroomURL } from "@/src/utils/constants";
 import userAtom from "@/src/atoms/userAtom";
 import ShortUniqueId from "short-unique-id";
 import toast from "react-hot-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddClassroomModalProps {
   onClose: () => void;
@@ -21,6 +22,7 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
   const [classroom, setClassroom] = useState<Classroom>({ name: "", code: "" });
   const setClassroomList = useSetRecoilState<Classroom[]>(classroomsAtom);
   const teacherDetails = useRecoilValue(userAtom);
+  const { toast } = useToast();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const id = new ShortUniqueId().randomUUID(6);
@@ -54,7 +56,9 @@ function AddClassroomModal({ onClose }: AddClassroomModalProps) {
       };
 
       setClassroomList((prevClassrooms) => [...prevClassrooms, newClassroom]);
-      toast.success("Classroom added successfully");
+      toast({
+        description: "Classroom added successfully",
+      });
     } catch (error: any) {
       if (error.response) {
         // Server responded with a status other than 200 range

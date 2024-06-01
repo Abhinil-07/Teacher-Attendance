@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import userAtom from "@/src/atoms/userAtom";
 import { CalendarIcon, LogOutIcon } from "lucide-react";
+import { ModeToggle } from "@/components/toggle";
 
 const Navbar: React.FC = () => {
   const user = useRecoilValue(userAtom);
@@ -15,16 +16,17 @@ const Navbar: React.FC = () => {
       <nav className="flex items-center gap-6 text-lg font-medium">
         <Link
           className="flex items-center gap-2 text-lg font-semibold"
-          href="#"
+          href="/dashboard"
         >
           <CalendarIcon className="h-6 w-6" />
           <span className="sr-only">Attendance System</span>
         </Link>
-        <Link className="font-bold" href="#">
+        <Link className="font-bold" href="/classrooms">
           Classrooms
         </Link>
       </nav>
       <div className="flex items-center gap-4">
+        <ModeToggle />
         <div className="flex items-center gap-2">
           <Avatar>
             <AvatarImage alt="Avatar" src="/placeholder-user.jpg" />
