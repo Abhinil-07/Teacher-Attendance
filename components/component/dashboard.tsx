@@ -6,13 +6,14 @@ import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { CardContent, Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import AddClassroomModal from "./AddClassroomModal";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import classroomsAtom from "@/src/atoms/classrooms";
 import { classroomURL, attendanceURL } from "@/src/utils/constants";
 import axios from "axios";
 import Loading from "../loading";
 import { DownloadIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import userAtom from "@/src/atoms/userAtom";
 interface AttendanceRecord {
   studentId: string;
   name: string;
@@ -26,13 +27,13 @@ interface AttendanceData {
 export function MyDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const teacherInfo = useRecoilValue(userAtom);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const handleAddClassroom = (classroom: { code: string; name: string }) => {};
   const classrooms = useRecoilState(classroomsAtom);
   const setClassrooms = useSetRecoilState(classroomsAtom);
-
+  const teacherId = teacherInfo._id;
   console.log("mera classroom", classrooms);
 
   const handleCopyToClipboard = (text: string, name: string) => {
@@ -46,7 +47,7 @@ export function MyDashboard() {
   useEffect(() => {
     const fetchClassrooms = async () => {
       try {
-        const response = await axios.get(`${classroomURL}/all`);
+        const response = await axios.get(`${classroomURL}/all/${teacherId}`);
         console.log(response.data.classrooms);
         setClassrooms(response.data.classrooms);
       } catch (error) {
