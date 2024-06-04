@@ -1,9 +1,9 @@
-import Navbar from "@/components/navbar";
+// import Navbar from "@/components/navbar";
 
 import { Providers } from "@/providers";
-
+import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
-
+const Navbar = dynamic(() => import("@/components/navbar"), { ssr: false });
 const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({
   children,

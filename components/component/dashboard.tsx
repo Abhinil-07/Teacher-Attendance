@@ -6,24 +6,36 @@ import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { CardContent, Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import AddClassroomModal from "./AddClassroomModal";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import classroomsAtom from "@/src/atoms/classrooms";
-import { classroomURL } from "@/src/utils/constants";
+import { classroomURL, attendanceURL } from "@/src/utils/constants";
 import axios from "axios";
 import Loading from "../loading";
 import { DownloadIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import userAtom from "@/src/atoms/userAtom";
+interface AttendanceRecord {
+  studentId: string;
+  name: string;
+  present: number;
+}
 
+interface AttendanceData {
+  date: string;
+  attendance: AttendanceRecord[];
+}
 export function MyDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const teacherInfo = useRecoilValue(userAtom);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const handleAddClassroom = (classroom: { code: string; name: string }) => {};
   const classrooms = useRecoilState(classroomsAtom);
   const setClassrooms = useSetRecoilState(classroomsAtom);
+  const teacherId = teacherInfo._id;
   console.log("mera classroom", classrooms);
+
   const handleCopyToClipboard = (text: string, name: string) => {
     navigator.clipboard
       .writeText(text)
@@ -31,10 +43,11 @@ export function MyDashboard() {
         toast.success(`Classroom code for ${name} ${text} copied to clipboard`)
       );
   };
+
   useEffect(() => {
     const fetchClassrooms = async () => {
       try {
-        const response = await axios.get(`${classroomURL}/all`);
+        const response = await axios.get(`${classroomURL}/all/${teacherId}`);
         console.log(response.data.classrooms);
         setClassrooms(response.data.classrooms);
       } catch (error) {
@@ -45,6 +58,75 @@ export function MyDashboard() {
     };
     fetchClassrooms();
   }, [setClassrooms]);
+
+  const handleDownloadCSV = async (classroomId: string) => {
+    try {
+      const response = await axios.get(
+        `${attendanceURL}/cumulative/${classroomId}`
+      );
+      const data: AttendanceData[] = response.data.attendance;
+
+      generateCSV(data);
+    } catch (error) {
+      console.error("Error fetching attendance data:", error);
+    }
+  };
+
+  const generateCSV = (data: AttendanceData[]) => {
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add headers
+    csvContent += "Name,Student ID";
+    data.forEach((attendance) => {
+      csvContent += `,${new Date(attendance.date).toLocaleDateString()}`;
+    });
+    csvContent += ",Total\n"; // Add Total column header
+
+    // Create a map to store attendance records by student
+    const studentAttendanceMap: {
+      [key: string]: {
+        name: string;
+        studentId: string;
+        days: number[];
+        total: number;
+      };
+    } = {};
+
+    // Populate the map
+    data.forEach((attendance, dateIndex) => {
+      attendance.attendance.forEach((record: any) => {
+        if (!studentAttendanceMap[record.studentId]) {
+          studentAttendanceMap[record.studentId] = {
+            name: record.name,
+            studentId: record.studentId,
+            days: [],
+            total: 0,
+          };
+        }
+        studentAttendanceMap[record.studentId].days[dateIndex] = record.present;
+        studentAttendanceMap[record.studentId].total += record.present;
+      });
+    });
+
+    // Add attendance records
+    for (const studentId in studentAttendanceMap) {
+      const record = studentAttendanceMap[studentId];
+      csvContent += `${record.name},${record.studentId}`;
+      record.days.forEach((present) => {
+        csvContent += `,${present === 1 ? "Present" : "Absent"}`;
+      });
+      csvContent += `,${record.total}\n`; // Add total present count for each student
+    }
+
+    // Create a temporary link to trigger the download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "attendance.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <>
       {isLoading ? (
@@ -95,7 +177,11 @@ export function MyDashboard() {
                         <TrashIcon className="h-4 w-4" />
                         <span className="sr-only">Delete Classroom</span>
                       </Button>
-                      <Button size="sm" variant="ghost">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDownloadCSV(classroom.code)}
+                      >
                         <DownloadIcon className="h-4 w-4" />
                         <span className="sr-only">
                           Download Attendance Sheet
