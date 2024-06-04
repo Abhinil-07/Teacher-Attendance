@@ -28,9 +28,9 @@ const Navbar: React.FC = () => {
       <div className="flex items-center gap-4">
         <ModeToggle />
         <div className="flex items-center gap-2">
-          {/* <Avatar>
+          <Avatar>
             <AvatarImage alt="Avatar" src="/placeholder-user.jpg" />
-          </Avatar> */}
+          </Avatar>
           <div className="text-sm font-medium">{user.username}</div>
         </div>
         <Button className="rounded-full" size="icon" variant="ghost">
