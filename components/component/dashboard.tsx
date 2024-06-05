@@ -40,7 +40,7 @@ export function MyDashboard() {
     navigator.clipboard
       .writeText(text)
       .then(() =>
-        toast.success(`Classroom code for ${name} ${text} copied to clipboard`)
+        alert(`Classroom code for ${name} copied to clipboard: ${text}`)
       );
   };
 
@@ -64,8 +64,9 @@ export function MyDashboard() {
       const response = await axios.get(
         `${attendanceURL}/cumulative/${classroomId}`
       );
-      const data: AttendanceData[] = response.data.attendance;
-
+      console.log("backend sein respnse", response.data);
+      const data: AttendanceData[] = response.data;
+      console.log("excel ke liye data", data);
       generateCSV(data);
     } catch (error) {
       console.error("Error fetching attendance data:", error);
@@ -78,7 +79,8 @@ export function MyDashboard() {
     // Add headers
     csvContent += "Name,Student ID";
     data.forEach((attendance) => {
-      csvContent += `,${new Date(attendance.date).toLocaleDateString()}`;
+      const formattedDate = new Date(attendance.date).toLocaleDateString(); // Convert date to string
+      csvContent += `,${formattedDate}`;
     });
     csvContent += ",Total\n"; // Add Total column header
 
@@ -87,14 +89,14 @@ export function MyDashboard() {
       [key: string]: {
         name: string;
         studentId: string;
-        days: number[];
+        days: string[];
         total: number;
       };
     } = {};
 
     // Populate the map
-    data.forEach((attendance, dateIndex) => {
-      attendance.attendance.forEach((record: any) => {
+    data.forEach((attendance) => {
+      attendance.attendance.forEach((record) => {
         if (!studentAttendanceMap[record.studentId]) {
           studentAttendanceMap[record.studentId] = {
             name: record.name,
@@ -103,8 +105,12 @@ export function MyDashboard() {
             total: 0,
           };
         }
-        studentAttendanceMap[record.studentId].days[dateIndex] = record.present;
-        studentAttendanceMap[record.studentId].total += record.present;
+        studentAttendanceMap[record.studentId].days.push(
+          record.present === 1 ? "Present" : "Absent"
+        );
+        if (record.present === 1) {
+          studentAttendanceMap[record.studentId].total += 1;
+        }
       });
     });
 
@@ -112,8 +118,8 @@ export function MyDashboard() {
     for (const studentId in studentAttendanceMap) {
       const record = studentAttendanceMap[studentId];
       csvContent += `${record.name},${record.studentId}`;
-      record.days.forEach((present) => {
-        csvContent += `,${present === 1 ? "Present" : "Absent"}`;
+      record.days.forEach((status) => {
+        csvContent += `,${status}`;
       });
       csvContent += `,${record.total}\n`; // Add total present count for each student
     }
